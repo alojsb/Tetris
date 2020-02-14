@@ -51,10 +51,12 @@
         board.style.height = buildingBlockSize * boardHeight + "px";
 
         // global variables for game mechanics
-        let activeTet;
-        let direction;
-        let blocks = [[],[],[],[]];
-        let blockIndex;
+        let activeTet;  // store active tetromino piece
+        let direction;  // store direction of movement (down, left, right, rotation)
+        let blocks = [[],[],[],[]]; // store coordinates of 4 squares of active tetromino
+        let blockIndex; // store active index of 'blocks' array
+        let travelDistance = 1; // store travel distance of active tetromino, 'Game Over' if creation of new tetromino at value 0
+        let gameTick;   // game tick
 
         // set-up the grid inside the board
         board.style.gridTemplateColumns = "repeat(" + boardWidth + ", 1fr)";
@@ -166,6 +168,7 @@
                 this.erase();
                 this.xCoord += 1;
                 this.draw();
+                travelDistance++;
             }
 
             moveLeft() {
@@ -492,6 +495,7 @@
                 }
                 else {
                     // can't move downwards - about to create new tetromino
+                    clearInterval(gameTick);
                     createNew();
                 }
             }
@@ -505,14 +509,35 @@
         });
 
         // create new tetromino piece
-        function createNew() {            
+        function createNew() {
+            // check 'Game Over' condition
+            if (travelDistance == 0) {
+                clearInterval(gameTick);
+                console.log("game over!!!");
+            }
             let selectedPiece = Math.floor(Math.random() * 7);  // random number between 0 and 6
             activeTet = new Tetromino(tetrominoShape[selectedPiece], tetrominoColor[selectedPiece], 0, 3, 0);
             activeTet.draw();
+            travelDistance = 0;
         }
 
-        // creation of first tetromino on board
-        createNew();
+        function game() {
+            // creation of first tetromino on board
+            createNew();
+
+            gametick = setInterval(function () {
+                if (!(checkCollision(activeTet, direction))) {
+                    activeTet.moveDown();
+                }
+                else {
+                    // can't move downwards - about to create new tetromino
+                    createNew();
+                }
+            }, 1000);
+        }
+
+        // initiate game
+        game();
     
     </script>
 </body>
